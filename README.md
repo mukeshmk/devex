@@ -15,7 +15,7 @@ Git worktrees let you have multiple branches checked out simultaneously in separ
 ## Installation
 
 ```bash
-git clone https://github.com/yourusername/git-wt-tools.git
+git clone https://github.com/mukeshmk/git-wt-tools.git
 cd git-wt-tools
 bash install.sh
 ```
