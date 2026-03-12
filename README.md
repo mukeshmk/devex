@@ -1,4 +1,8 @@
-# git-wt — Git Worktree Manager
+# DevEx Manager — Developer Experience Tools
+
+A collection of lightweight CLI tools to enhance your development workflow. DevEx Manager includes `git wt` for managing Git worktrees and Python auto-venv tools for seamless virtual environment management.
+
+## git-wt — Git Worktree Manager
 
 A lightweight CLI tool that wraps `git worktree` to simplify working with bare repositories and multiple worktrees. Instead of juggling branches in a single checkout, `git wt` lets you clone repos as bare, spin up worktrees as folders, and tear them down cleanly — all with short, memorable commands.
 
@@ -24,8 +28,9 @@ The installer:
 1. Copies `git-wt` and the sub-command scripts to `~/.local/bin/`
 2. Makes all scripts executable
 3. Optionally installs a set of handy Git aliases (see Optional Git Aliases section below)
-4. Sets up shell auto-completion for `git wt` commands
-5. Adds `~/.local/bin` to your `PATH` in `~/.zshrc` or `~/.bash_profile` / `~/.bashrc` (if not already present)
+4. Optionally installs Python auto-venv tools (see Python Auto-Venv section below)
+5. Sets up shell auto-completion for `git wt` commands
+6. Adds `~/.local/bin` to your `PATH` in `~/.zshrc` or `~/.bash_profile` / `~/.bashrc` (if not already present)
 
 After installing, open a new terminal or run:
 
@@ -126,6 +131,44 @@ git wt unlock    # Unlock a worktree
 ```
 
 These commands are passed directly to `git worktree`, so you can use all the same options and flags.
+
+## Python Auto-Venv
+
+The installer optionally includes Python virtual environment automation that:
+
+- Automatically activates `.venv` when you `cd` into a project directory
+- Automatically deactivates when you leave the project
+- Provides a quick `venv` command to create new virtual environments using `uv`
+
+### Features
+
+- Searches up the directory tree to find `.venv/bin/activate`
+- Seamlessly switches between different project venvs
+- Works with any shell that supports bash-style functions
+
+### Usage
+
+Once installed, the auto-venv tools work automatically:
+
+```bash
+# Navigate into a project with a .venv
+cd my-python-project
+# → .venv automatically activated
+
+# Leave the project
+cd ~
+# → .venv automatically deactivated
+
+# Create a new venv quickly (requires uv)
+cd new-project
+venv
+# → Creates .venv using uv and activates it
+```
+
+### Requirements
+
+- The `venv` command requires [uv](https://github.com/astral-sh/uv) to be installed
+- Auto-activation works with any `.venv` created by any tool
 
 ## Optional Git Aliases
 
