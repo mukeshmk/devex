@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+
+# Usage: git wt-add <branch-name> [base-branch] [main-worktree-name]
+
+set -e  # Exit on error
+
+BRANCH_NAME="$1"
+BASE_BRANCH="${2:-main}"
+MAIN_WORKTREE_NAME="${3:-main}"
+
+# Extract the ticket number (e.g., JIRA-1234) to use as the folder name.
+WORKTREE_DIR_NAME=$(echo "$BRANCH_NAME" | cut -d'-' -f1,2)
+
+# Colors for output
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+if [ -z "$BRANCH_NAME" ]; then
+    echo -e "${RED}Error: Branch name is required${NC}"
+    echo "Usage: git wt-add <branch-name> [base-branch] [main-worktree-name]"
+    exit 1
+fi
+
+# Detect git repository root
+GIT_DIR="$(git rev-parse --git-dir 2>/dev/null)" || {
+    echo -e "${RED}Error: Not in a git repository${NC}"
+    exit 1
+}
+
+# Handle both bare and non-bare repos
+if git rev-parse --is-bare-repository 2>/dev/null | grep -q "true"; then
+    REPO_ROOT="$(cd "$GIT_DIR" && pwd)"
+    if [ "$(basename "$REPO_ROOT")" = ".git" ]; then
+        REPO_ROOT="$(dirname "$REPO_ROOT")"
+    fi
+else
+    GIT_COMMON_DIR="$(git rev-parse --git-common-dir)"
+    GIT_COMMON_DIR="$(cd "$GIT_COMMON_DIR" && pwd)"
+    if [ -f "$GIT_COMMON_DIR/config" ] && grep -q "bare = true" "$GIT_COMMON_DIR/config" 2>/dev/null; then
+        REPO_ROOT="$GIT_COMMON_DIR"
+        if [ "$(basename "$REPO_ROOT")" = ".git" ]; then
+            REPO_ROOT="$(dirname "$REPO_ROOT")"
+        fi
+    else
+        REPO_ROOT="$(git rev-parse --show-toplevel)"
+    fi
+fi
+
+MAIN_WORKTREE="$REPO_ROOT/$MAIN_WORKTREE_NAME"
+NEW_WORKTREE="$REPO_ROOT/$WORKTREE_DIR_NAME"
+
+echo -e "${BLUE}Setting up worktree for branch: $BRANCH_NAME${NC}"
+echo -e "Folder name will be: $WORKTREE_DIR_NAME"
+
+# Step 1: Create or check out the worktree
+echo -e "${GREEN}[1/2] Configuring git worktree...${NC}"
+cd "$REPO_ROOT"
+
+# Check if the branch exists locally OR remotely
+if git show-ref --verify --quiet "refs/heads/$BRANCH_NAME" || \
+   git show-ref --verify --quiet "refs/remotes/origin/$BRANCH_NAME"; then
+    echo -e "  Branch '$BRANCH_NAME' already exists. Checking it out..."
+    git worktree add "$NEW_WORKTREE" "$BRANCH_NAME"
+else
+    echo -e "  Branch '$BRANCH_NAME' does not exist. Creating it from '$BASE_BRANCH'..."
+    git worktree add -b "$BRANCH_NAME" "$NEW_WORKTREE" "$BASE_BRANCH"
+fi
+
+# Step 2: Copy directories from main to new worktree
+echo -e "${GREEN}[2/2] Copying configuration directories...${NC}"
+if [ -d "$MAIN_WORKTREE" ]; then
+    for dir in ".claude" ".kiro" ".vscode"; do
+        if [ -d "$MAIN_WORKTREE/$dir" ]; then
+            echo "  Copying $dir..."
+            cp -r "$MAIN_WORKTREE/$dir" "$NEW_WORKTREE/"
+        fi
+    done
+else
+    echo -e "${YELLOW}  Warning: Main worktree '$MAIN_WORKTREE_NAME' not found, skipping directory copy${NC}"
+fi
+
+echo -e "\n${BLUE}✓ Worktree ready!${NC}"
+echo -e "To switch to the new worktree, run:"
+echo -e "  ${GREEN}cd \"$NEW_WORKTREE\"${NC}"
