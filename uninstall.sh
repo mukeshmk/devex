@@ -31,35 +31,20 @@ else
     echo "  - git-wt-tools directory not found"
 fi
 
-# 2. Remove Git aliases
+# 2. Get the directory where the uninstall script is currently located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# 3. Remove Git aliases
 echo -e "\n${YELLOW}Would you like to remove the Git aliases installed by DevEx Manager?${NC}"
 read -p "(y/n) " -n 1 -r
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo "Removing Git aliases..."
-    git config --global --unset alias.a 2>/dev/null || true
-    git config --global --unset alias.s 2>/dev/null || true
-    git config --global --unset alias.d 2>/dev/null || true
-    git config --global --unset alias.f 2>/dev/null || true
-    git config --global --unset alias.m 2>/dev/null || true
-    git config --global --unset alias.c 2>/dev/null || true
-    git config --global --unset alias.b 2>/dev/null || true
-    git config --global --unset alias.l 2>/dev/null || true
-    git config --global --unset alias.r 2>/dev/null || true
-    git config --global --unset alias.rs 2>/dev/null || true
-    git config --global --unset alias.ls 2>/dev/null || true
-    git config --global --unset alias.bn 2>/dev/null || true
-    git config --global --unset alias.fet 2>/dev/null || true
-    git config --global --unset alias.mer 2>/dev/null || true
-    git config --global --unset alias.pul 2>/dev/null || true
-    git config --global --unset alias.pus 2>/dev/null || true
-    git config --global --unset alias.stas 2>/dev/null || true
-    echo -e "${GREEN}✓ Git aliases removed${NC}"
+    bash "$SCRIPT_DIR/git-aliases/uninstall-git-aliases.sh"
 else
     echo "Skipping Git aliases removal."
 fi
 
-# 3. Clean up shell configuration
+# 4. Clean up shell configuration
 SHELL_RC=""
 if [[ "$SHELL" == */zsh ]]; then
     SHELL_RC="$HOME/.zshrc"
