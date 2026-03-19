@@ -27,8 +27,8 @@ bash install.sh
 The installer:
 1. Copies `git-wt` and the sub-command scripts to `~/.local/bin/`
 2. Makes all scripts executable
-3. Optionally installs a set of handy Git aliases (see Optional Git Aliases section below)
-4. Optionally installs Python auto-venv tools (see Python Auto-Venv section below)
+3. Optionally installs a set of handy Git aliases via `git-aliases/install-git-aliases.sh` (see Optional Git Aliases section below)
+4. Optionally installs Python auto-venv tools via `auto-venv/auto-venv.sh` (see Python Auto-Venv section below)
 5. Sets up shell auto-completion for `git wt` commands
 6. Adds `~/.local/bin` to your `PATH` in `~/.zshrc` or `~/.bash_profile` / `~/.bashrc` (if not already present)
 
@@ -230,7 +230,7 @@ venv
 
 ## Optional Git Aliases
 
-During installation you'll be prompted to install shortcut aliases. These are set via `git config --global` and include:
+During installation you'll be prompted to install shortcut aliases via the `git-aliases/install-git-aliases.sh` module. These are set via `git config --global` and include:
 
 | Alias | Expands To | Description |
 |---|---|---|
