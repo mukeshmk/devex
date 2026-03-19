@@ -150,9 +150,9 @@ These commands are passed directly to `git worktree`, so you can use all the sam
 # Edit the values below to customize worktree behavior for this repository.
 
 [symlinks]
-# Comma-separated list of directories to symlink from the main worktree
+# Comma-separated list of files and directories to symlink from the main worktree
 # into each new worktree. Paths are relative to the worktree root.
-dirs = .claude,.kiro,.vscode
+paths = .claude,.kiro,.vscode
 
 [worktree]
 # How to derive the worktree folder name from the branch name.
@@ -169,7 +169,7 @@ main_worktree_name = main
 
 | Section | Key | Default | Description |
 |---|---|---|---|
-| `[symlinks]` | `dirs` | `.claude,.kiro,.vscode` | Comma-separated list of directories to symlink from the main worktree into new worktrees |
+| `[symlinks]` | `paths` | `.claude,.kiro,.vscode` | Comma-separated list of files and directories to symlink from the main worktree into new worktrees |
 | `[worktree]` | `naming_strategy` | `ticket-prefix` | How to derive folder names from branch names |
 | `[worktree]` | `main_worktree_name` | `main` | Name of the primary worktree directory |
 

@@ -34,9 +34,9 @@ devex_generate_config() {
 # Edit the values below to customize worktree behavior for this repository.
 
 [symlinks]
-# Comma-separated list of directories to symlink from the main worktree
+# Comma-separated list of files and directories to symlink from the main worktree
 # into each new worktree. Paths are relative to the worktree root.
-dirs = .claude,.kiro,.vscode
+paths = .claude,.kiro,.vscode
 
 [worktree]
 # How to derive the worktree folder name from the branch name.

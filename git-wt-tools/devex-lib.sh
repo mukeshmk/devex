@@ -6,7 +6,7 @@
 # Usage: source this file, then call devex_load_config <repo_root>
 #
 # After calling devex_load_config, these variables are set:
-#   DEVEX_SYMLINK_DIRS       - comma-separated list of dirs to symlink
+#   DEVEX_SYMLINK_PATHS      - comma-separated list of paths (files/dirs) to symlink
 #   DEVEX_NAMING_STRATEGY    - "ticket-prefix" or "full-branch"
 #   DEVEX_MAIN_WORKTREE_NAME - name of the main worktree directory
 
@@ -15,7 +15,7 @@ devex_load_config() {
     local config_file="$repo_root/.devex.conf"
 
     # Defaults
-    DEVEX_SYMLINK_DIRS=".claude,.kiro,.vscode"
+    DEVEX_SYMLINK_PATHS=".claude,.kiro,.vscode"
     DEVEX_NAMING_STRATEGY="ticket-prefix"
     DEVEX_MAIN_WORKTREE_NAME="main"
 
@@ -48,7 +48,7 @@ devex_load_config() {
             value="${value%"${value##*[![:space:]]}"}"
 
             case "${current_section}.${key}" in
-                symlinks.dirs)               DEVEX_SYMLINK_DIRS="$value" ;;
+                symlinks.paths)              DEVEX_SYMLINK_PATHS="$value" ;;
                 worktree.naming_strategy)     DEVEX_NAMING_STRATEGY="$value" ;;
                 worktree.main_worktree_name)  DEVEX_MAIN_WORKTREE_NAME="$value" ;;
             esac

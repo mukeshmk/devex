@@ -80,14 +80,14 @@ if [ -n "$WORKTREE_PATH" ]; then
 
     echo -e "${GREEN}[1/2] Removing worktree folder and configuration...${NC}"
     # Remove symlinks for configuration directories before removing the worktree
-    IFS=',' read -ra _dirs <<< "$DEVEX_SYMLINK_DIRS"
-    for dir in "${_dirs[@]}"; do
-        dir="${dir#"${dir%%[![:space:]]*}"}"
-        dir="${dir%"${dir##*[![:space:]]}"}"
-        [ -z "$dir" ] && continue
-        if [ -L "$WORKTREE_PATH/$dir" ]; then
-            echo "  Removing symlink $dir..."
-            rm "$WORKTREE_PATH/$dir"
+    IFS=',' read -ra _paths <<< "$DEVEX_SYMLINK_PATHS"
+    for p in "${_paths[@]}"; do
+        p="${p#"${p%%[![:space:]]*}"}"
+        p="${p%"${p##*[![:space:]]}"}"
+        [ -z "$p" ] && continue
+        if [ -L "$WORKTREE_PATH/$p" ]; then
+            echo "  Removing symlink $p..."
+            rm "$WORKTREE_PATH/$p"
         fi
     done
     git worktree remove "$WORKTREE_PATH" --force

@@ -82,15 +82,15 @@ fi
 # Step 2: Symlink configuration directories from main to new worktree
 echo -e "${GREEN}[2/2] Symlinking configuration directories...${NC}"
 if [ -d "$MAIN_WORKTREE" ]; then
-    IFS=',' read -ra _dirs <<< "$DEVEX_SYMLINK_DIRS"
-    for dir in "${_dirs[@]}"; do
+    IFS=',' read -ra _paths <<< "$DEVEX_SYMLINK_PATHS"
+    for p in "${_paths[@]}"; do
         # Trim whitespace
-        dir="${dir#"${dir%%[![:space:]]*}"}"
-        dir="${dir%"${dir##*[![:space:]]}"}"
-        [ -z "$dir" ] && continue
-        if [ -d "$MAIN_WORKTREE/$dir" ]; then
-            echo "  Symlinking $dir..."
-            ln -s "$MAIN_WORKTREE/$dir" "$NEW_WORKTREE/$dir"
+        p="${p#"${p%%[![:space:]]*}"}"
+        p="${p%"${p##*[![:space:]]}"}"
+        [ -z "$p" ] && continue
+        if [ -e "$MAIN_WORKTREE/$p" ]; then
+            echo "  Symlinking $p..."
+            ln -s "$MAIN_WORKTREE/$p" "$NEW_WORKTREE/$p"
         fi
     done
 else
