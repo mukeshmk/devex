@@ -4,6 +4,10 @@
 
 set -e
 
+# Resolve script directory and source shared config library
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/devex-lib.sh"
+
 TARGET="$1"
 
 # Colors
@@ -17,6 +21,18 @@ if [ -z "$TARGET" ]; then
     echo -e "${RED}Error: Target (folder or branch name) is required${NC}"
     echo "Usage: git wt-rm <folder-name-or-branch-name>"
     exit 1
+fi
+
+# Determine repo root for config loading
+_GIT_DIR="$(git rev-parse --git-dir 2>/dev/null)" || true
+if [ -n "$_GIT_DIR" ]; then
+    _GIT_COMMON_DIR="$(git rev-parse --git-common-dir 2>/dev/null)"
+    _GIT_COMMON_DIR="$(cd "$_GIT_COMMON_DIR" && pwd)"
+    _REPO_ROOT="$_GIT_COMMON_DIR"
+    if [ "$(basename "$_REPO_ROOT")" = ".git" ]; then
+        _REPO_ROOT="$(dirname "$_REPO_ROOT")"
+    fi
+    devex_load_config "$_REPO_ROOT"
 fi
 
 # 1. Ask Git for all worktrees and figure out the exact path and branch name
@@ -63,6 +79,17 @@ if [ -n "$WORKTREE_PATH" ]; then
     fi
 
     echo -e "${GREEN}[1/2] Removing worktree folder and configuration...${NC}"
+    # Remove symlinks for configuration directories before removing the worktree
+    IFS=',' read -ra _dirs <<< "$DEVEX_SYMLINK_DIRS"
+    for dir in "${_dirs[@]}"; do
+        dir="${dir#"${dir%%[![:space:]]*}"}"
+        dir="${dir%"${dir##*[![:space:]]}"}"
+        [ -z "$dir" ] && continue
+        if [ -L "$WORKTREE_PATH/$dir" ]; then
+            echo "  Removing symlink $dir..."
+            rm "$WORKTREE_PATH/$dir"
+        fi
+    done
     git worktree remove "$WORKTREE_PATH" --force
 else
     echo -e "${YELLOW}Worktree for '$TARGET' not found (it may have already been removed).${NC}"
