@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Usage: git wt-add <branch-name> [base-branch] [main-worktree-name]
+# Usage: git wt-add <branch-name> [custom-folder-name]
 
 set -e  # Exit on error
 
@@ -9,8 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/devex-lib.sh"
 
 BRANCH_NAME="$1"
-BASE_BRANCH="${2:-main}"
-MAIN_WORKTREE_NAME="${3:-}"
+CUSTOM_FOLDER_NAME="${2:-}"
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -21,7 +20,7 @@ NC='\033[0m'
 
 if [ -z "$BRANCH_NAME" ]; then
     echo -e "${RED}Error: Branch name is required${NC}"
-    echo "Usage: git wt-add <branch-name> [base-branch] [main-worktree-name]"
+    echo "Usage: git wt-add <branch-name> [custom-folder-name]"
     exit 1
 fi
 
@@ -53,11 +52,21 @@ fi
 # Load config from repo root (sets DEVEX_* variables with defaults if no config)
 devex_load_config "$REPO_ROOT"
 
-# Apply config-based defaults (CLI args override config values)
-MAIN_WORKTREE_NAME="${MAIN_WORKTREE_NAME:-$DEVEX_MAIN_WORKTREE_NAME}"
+# Base branch and main worktree name come from config (or defaults)
+BASE_BRANCH="$DEVEX_BASE_BRANCH"
+MAIN_WORKTREE_NAME="$DEVEX_MAIN_WORKTREE_NAME"
 
 # Derive worktree directory name using configured naming strategy
-WORKTREE_DIR_NAME=$(devex_resolve_worktree_name "$BRANCH_NAME" "$DEVEX_NAMING_STRATEGY") || exit 1
+if [ "$DEVEX_NAMING_STRATEGY" = "custom" ]; then
+    if [ -z "$CUSTOM_FOLDER_NAME" ]; then
+        echo -e "${RED}Error: Custom folder name is required when naming_strategy is 'custom'${NC}"
+        echo "Usage: git wt-add <branch-name> <custom-folder-name>"
+        exit 1
+    fi
+    WORKTREE_DIR_NAME="$CUSTOM_FOLDER_NAME"
+else
+    WORKTREE_DIR_NAME=$(devex_resolve_worktree_name "$BRANCH_NAME" "$DEVEX_NAMING_STRATEGY") || exit 1
+fi
 
 MAIN_WORKTREE="$REPO_ROOT/$MAIN_WORKTREE_NAME"
 NEW_WORKTREE="$REPO_ROOT/$WORKTREE_DIR_NAME"
