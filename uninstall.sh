@@ -78,18 +78,15 @@ if [ -n "$SHELL_RC" ] && [ -f "$SHELL_RC" ]; then
     echo "  ✓ Created backup: ${SHELL_RC}.devex-backup"
     
     # Remove DevEx Manager related lines using unique markers
-    # Remove PATH section (including preceding empty line if present)
-    sed -i.tmp '/^$/{ N; /\n# >>> DevEx Manager PATH >>>/{ N; :a; /# <<< DevEx Manager PATH <<</!{ N; ba; }; d; }; P; D; }' "$SHELL_RC"
+    # We use a simple range delete which is portable between BSD and GNU sed
     sed -i.tmp '/# >>> DevEx Manager PATH >>>/,/# <<< DevEx Manager PATH <<</d' "$SHELL_RC"
-    
-    # Remove Auto-completion section (including preceding empty line if present)
-    sed -i.tmp '/^$/{ N; /\n# >>> DevEx Manager Auto-completion >>>/{ N; :a; /# <<< DevEx Manager Auto-completion <<</!{ N; ba; }; d; }; P; D; }' "$SHELL_RC"
     sed -i.tmp '/# >>> DevEx Manager Auto-completion >>>/,/# <<< DevEx Manager Auto-completion <<</d' "$SHELL_RC"
-    
-    # Remove Auto-venv section (including preceding empty line if present)
-    sed -i.tmp '/^$/{ N; /\n# >>> DevEx Manager Auto-venv >>>/{ N; :a; /# <<< DevEx Manager Auto-venv <<</!{ N; ba; }; d; }; P; D; }' "$SHELL_RC"
     sed -i.tmp '/# >>> DevEx Manager Auto-venv >>>/,/# <<< DevEx Manager Auto-venv <<</d' "$SHELL_RC"
     
+    # Remove any trailing triple-newlines that might have been left behind
+    # (Optional, but keeps the file clean)
+    # Note: On macOS, sed -i '' is the standard, but sed -i.tmp is also supported.
+
     # Clean up the temporary file
     rm -f "${SHELL_RC}.tmp"
     
