@@ -17,6 +17,9 @@ _auto_venv_find() {
 }
 
 _auto_venv_check_init() {
+    # Only prompt in interactive shells
+    [[ $- != *i* ]] && return
+
     # Only prompt if no venv is active
     if [ -z "$VIRTUAL_ENV" ]; then
         # Find project root (where manifest exists)
@@ -38,7 +41,7 @@ _auto_venv_check_init() {
                 echo ""
                 if [[ $REPLY =~ ^[Yy]$ ]]; then
                     # Navigate to project root to run venv
-                    (cd "$project_root" && venv)
+                    (builtin cd "$project_root" && venv)
                 fi
                 export _AUTO_VENV_PROMPTED_DIR="$project_root"
             fi
@@ -47,6 +50,9 @@ _auto_venv_check_init() {
 }
 
 _auto_stale_wt_check() {
+    # Only run in interactive shells
+    [[ $- != *i* ]] && return
+
     # 1. Quick check for git
     if ! command -v git &> /dev/null; then return; fi
 
@@ -56,19 +62,25 @@ _auto_stale_wt_check() {
 
     # 3. Check if we are in a worktree branch (and not main/bare)
     local branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
-    if [ -z "$branch" ] || [ "$branch" == "HEAD" ]; then return; fi
+    if [ -z "$branch" ] || [ "$branch" = "HEAD" ]; then return; fi
 
     # 4. Resolve repo root to load config
     local git_common_dir=$(git rev-parse --git-common-dir 2>/dev/null)
     if [ -z "$git_common_dir" ]; then return; fi
-    local repo_root="$(cd "$git_common_dir/.." && pwd)"
+    local repo_root="$(builtin cd "$git_common_dir/.." && pwd)"
 
     # 5. Load config to get base branch
     # Try to find devex-lib.sh relative to this script's directory (if installed)
     # or just use a default 'main' if it fails
     local base_branch="main"
-    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd 2>/dev/null)"
-    if [ -f "$script_dir/devex-lib.sh" ]; then
+    local script_dir=""
+    if [ -n "${BASH_VERSION:-}" ]; then
+        script_dir="$(builtin cd "$(dirname "${BASH_SOURCE[0]}")" && pwd 2>/dev/null)"
+    elif [ -n "${ZSH_VERSION:-}" ]; then
+        script_dir="$(builtin cd "$(dirname "${(%):-%x}")" && pwd 2>/dev/null)"
+    fi
+
+    if [ -n "$script_dir" ] && [ -f "$script_dir/devex-lib.sh" ]; then
         # We need to be careful not to pollute current environment too much, 
         # but devex_load_config is designed for this.
         source "$script_dir/devex-lib.sh"
@@ -77,7 +89,7 @@ _auto_stale_wt_check() {
     fi
 
     # Skip if we are already on the base branch
-    if [ "$branch" == "$base_branch" ]; then return; fi
+    if [ "$branch" = "$base_branch" ]; then return; fi
 
     # 6. Check if branch is merged into base branch
     # Note: Use local check only for performance
@@ -110,10 +122,19 @@ _auto_venv_switch() {
     _auto_stale_wt_check
 }
 
-# Override cd to automatically switch venvs
-cd() {
-    builtin cd "$@" && _auto_venv_switch
-}
+# Register hooks for automatic venv switching (only in interactive shells)
+if [[ $- == *i* ]]; then
+    if [[ -n "${ZSH_VERSION:-}" ]]; then
+        # Zsh: Use chpwd hook
+        autoload -Uz add-zsh-hook
+        add-zsh-hook chpwd _auto_venv_switch
+    elif [[ -n "${BASH_VERSION:-}" ]]; then
+        # Bash: Override cd to automatically switch venvs
+        cd() {
+            builtin cd "$@" && _auto_venv_switch
+        }
+    fi
+fi
 
 # Quick venv creation using uv
 venv() {
@@ -129,5 +150,7 @@ venv() {
     fi
 }
 
-# Run the switch once when the terminal first opens
-_auto_venv_switch
+# Run the switch once when the terminal first opens (only in interactive shells)
+if [[ $- == *i* ]]; then
+    _auto_venv_switch
+fi
