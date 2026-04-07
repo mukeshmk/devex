@@ -31,11 +31,10 @@ while read -r nb; do
     size=$(du -h "$nb" | awk '{print $1}')
     
     # Check if stripped (contains non-empty outputs)
-    # Simple check: if "outputs": [ followed by non-] 
-    # A bit hard with grep, let's use a simpler heuristic for now: 
-    # count non-empty output arrays
+    # Simple check: if "output_type" exists, it has output cells.
+    # Stripped notebooks (nbconvert or nbstripout) will have empty outputs lists.
     is_stripped="${GREEN}Stripped${NC}"
-    if grep -q '"outputs": \[.\+' "$nb"; then
+    if grep -q '"output_type":' "$nb"; then
         is_stripped="${YELLOW}Has Output${NC}"
     fi
     
