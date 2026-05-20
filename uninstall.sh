@@ -12,6 +12,7 @@ NC='\033[0m'
 INSTALL_DIR="$HOME/.local/bin"
 WT_TOOLS_DIR="$INSTALL_DIR/git-wt-tools"
 NB_TOOLS_DIR="$INSTALL_DIR/git-nb-tools"
+CTX_TOOLS_DIR="$INSTALL_DIR/git-ctx-tools"
 REPO_RAW_URL="https://raw.githubusercontent.com/mukeshmk/devex-manager/main"
 
 # Detect if we are running from a local clone or remotely via curl
@@ -44,6 +45,13 @@ else
     echo "  - git-nb router not found"
 fi
 
+if [ -f "$INSTALL_DIR/git-ctx" ]; then
+    rm "$INSTALL_DIR/git-ctx"
+    echo "  ✓ Removed git-ctx script"
+else
+    echo "  - git-ctx script not found"
+fi
+
 if [ -d "$WT_TOOLS_DIR" ]; then
     rm -rf "$WT_TOOLS_DIR"
     echo "  ✓ Removed git-wt-tools directory"
@@ -56,6 +64,13 @@ if [ -d "$NB_TOOLS_DIR" ]; then
     echo "  ✓ Removed git-nb-tools directory"
 else
     echo "  - git-nb-tools directory not found"
+fi
+
+if [ -d "$CTX_TOOLS_DIR" ]; then
+    rm -rf "$CTX_TOOLS_DIR"
+    echo "  ✓ Removed git-ctx-tools directory"
+else
+    echo "  - git-ctx-tools directory not found"
 fi
 
 # 2. Remove Git aliases

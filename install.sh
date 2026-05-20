@@ -12,6 +12,7 @@ NC='\033[0m'
 INSTALL_DIR="$HOME/.local/bin"
 WT_TOOLS_DIR="$INSTALL_DIR/git-wt-tools"
 NB_TOOLS_DIR="$INSTALL_DIR/git-nb-tools"
+CTX_TOOLS_DIR="$INSTALL_DIR/git-ctx-tools"
 REPO_RAW_URL="https://raw.githubusercontent.com/mukeshmk/devex-manager/main"
 
 # Detect if we are running from a local clone or remotely via curl
@@ -40,7 +41,7 @@ fetch_file() {
     fi
 }
 
-echo -e "${BLUE}Installing DevEx Manager (git wt & nb)...${NC}"
+echo -e "${BLUE}Installing DevEx Manager...${NC}"
 if [ "$IS_REMOTE" = true ]; then
     echo -e "${BLUE}Mode: Remote installation from GitHub${NC}"
 else
@@ -53,9 +54,10 @@ mkdir -p "$WT_TOOLS_DIR"
 mkdir -p "$NB_TOOLS_DIR"
 
 # 2. Copy executable files
-echo "Installing routers to $INSTALL_DIR..."
+echo "Installing routers and tools to $INSTALL_DIR..."
 fetch_file "git-wt" "$INSTALL_DIR/git-wt"
 fetch_file "git-nb" "$INSTALL_DIR/git-nb"
+
 
 echo "Installing worktree sub-commands to $WT_TOOLS_DIR..."
 fetch_file "git-wt-tools/git-wt-clone" "$WT_TOOLS_DIR/git-wt-clone"
@@ -71,9 +73,38 @@ fetch_file "git-nb-tools/git-nb-diff" "$NB_TOOLS_DIR/git-nb-diff"
 fetch_file "git-nb-tools/git-nb-kernel" "$NB_TOOLS_DIR/git-nb-kernel"
 fetch_file "git-nb-tools/git-nb-list" "$NB_TOOLS_DIR/git-nb-list"
 
+# Ask if user wants to install git-ctx
+INSTALL_GIT_CTX=false
+echo -e "\n${YELLOW}Would you like to install the git-ctx (Developer Context Manager) tools?${NC}"
+read -p "(y/n) " -n 1 -r
+echo ""
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    INSTALL_GIT_CTX=true
+fi
+
+if [ "$INSTALL_GIT_CTX" = true ]; then
+    mkdir -p "$CTX_TOOLS_DIR"
+    fetch_file "git-ctx" "$INSTALL_DIR/git-ctx"
+
+    echo "Installing context sub-commands to $CTX_TOOLS_DIR..."
+    fetch_file "git-ctx-tools/git-ctx-helper.sh" "$CTX_TOOLS_DIR/git-ctx-helper.sh"
+    fetch_file "git-ctx-tools/git-ctx-show" "$CTX_TOOLS_DIR/git-ctx-show"
+    fetch_file "git-ctx-tools/git-ctx-edit" "$CTX_TOOLS_DIR/git-ctx-edit"
+    fetch_file "git-ctx-tools/git-ctx-add" "$CTX_TOOLS_DIR/git-ctx-add"
+    fetch_file "git-ctx-tools/git-ctx-done" "$CTX_TOOLS_DIR/git-ctx-done"
+    fetch_file "git-ctx-tools/git-ctx-undo" "$CTX_TOOLS_DIR/git-ctx-undo"
+    fetch_file "git-ctx-tools/git-ctx-rm" "$CTX_TOOLS_DIR/git-ctx-rm"
+    fetch_file "git-ctx-tools/git-ctx-clear" "$CTX_TOOLS_DIR/git-ctx-clear"
+    fetch_file "git-ctx-tools/git-ctx-clean" "$CTX_TOOLS_DIR/git-ctx-clean"
+    fetch_file "git-ctx-tools/git-ctx-todo" "$CTX_TOOLS_DIR/git-ctx-todo"
+fi
+
 echo "Installing completion scripts to $WT_TOOLS_DIR..."
 fetch_file "git-wt-completion.sh" "$WT_TOOLS_DIR/git-wt-completion.sh"
 fetch_file "git-nb-completion.sh" "$WT_TOOLS_DIR/git-nb-completion.sh"
+if [ "$INSTALL_GIT_CTX" = true ]; then
+    fetch_file "git-ctx-completion.sh" "$WT_TOOLS_DIR/git-ctx-completion.sh"
+fi
 
 # 3. Make the scripts executable
 chmod +x "$INSTALL_DIR/git-wt"
@@ -81,6 +112,12 @@ chmod +x "$INSTALL_DIR/git-nb"
 chmod +x "$WT_TOOLS_DIR"/git-wt-*
 chmod +x "$WT_TOOLS_DIR/devex-lib.sh"
 chmod +x "$NB_TOOLS_DIR"/git-nb-*
+
+if [ "$INSTALL_GIT_CTX" = true ]; then
+    chmod +x "$INSTALL_DIR/git-ctx"
+    chmod +x "$CTX_TOOLS_DIR"/git-ctx-*
+    chmod +x "$CTX_TOOLS_DIR/git-ctx-helper.sh"
+fi
 
 # 4. Optional: Install Git Aliases
 echo -e "\n${YELLOW}Would you like to install the recommended Git shortcuts (e.g., 'git s' for status)?${NC}"
@@ -141,7 +178,7 @@ if [ -n "$SHELL_RC" ]; then
             mv "${SHELL_RC}.tmp" "$SHELL_RC"
             return 0
         fi
-        return 1
+        return 0
     }
 
     # Setup PATH
@@ -164,7 +201,14 @@ if [ -n "$SHELL_RC" ]; then
         
         add_to_devex_block "source \"$WT_TOOLS_DIR/git-wt-completion.sh\""
         add_to_devex_block "source \"$WT_TOOLS_DIR/git-nb-completion.sh\""
+        if [ "$INSTALL_GIT_CTX" = true ]; then
+            add_to_devex_block "source \"$WT_TOOLS_DIR/git-ctx-completion.sh\""
+        fi
     else
+        # Make sure git-ctx-completion is loaded if others were already configured
+        if [ "$INSTALL_GIT_CTX" = true ]; then
+            add_to_devex_block "source \"$WT_TOOLS_DIR/git-ctx-completion.sh\""
+        fi
         echo -e "Auto-completion already configured in $(basename "$SHELL_RC")."
     fi
 
