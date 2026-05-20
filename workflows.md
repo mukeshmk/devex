@@ -98,3 +98,29 @@ stateDiagram-v2
 ```
 
 **Key Benefit:** Zero-touch virtual environment management and proactive warnings for merged worktrees.
+
+---
+
+## 4. git ctx — Developer Context Manager
+
+```mermaid
+graph TD
+    A[git ctx show] --> B{Context file exists?}
+    B -- "No" --> C[Initialize .git/info/devex/contexts/branch.md]
+    B -- "Yes" --> D[Read & parse markdown checklist]
+    C --> D
+    D --> E[Print Checklist & Notes to terminal]
+    
+    F[git ctx done 1] --> G[Locate task in markdown file]
+    G --> H[Replace [ ] with [x]]
+    H --> E
+    
+    I[git ctx clean] --> J[Scan contexts folder]
+    J --> K{Branch still exists?}
+    K -- "No" --> L[List as Orphan]
+    K -- "Yes" --> M[Skip]
+    L --> N[Prompt to Delete]
+    N -- "y" --> O[Remove context file]
+```
+
+**Key Benefit:** Keeps task-specific scratchpads and checklist items localized to each branch without polluting git commits or configuration.

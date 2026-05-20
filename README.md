@@ -1,11 +1,12 @@
 # DevEx Manager — Developer Experience Tools
 
-A collection of lightweight CLI tools to enhance your development workflow. DevEx Manager includes `git wt` for managing Git worktrees, `git nb` for Jupyter Notebook utilities, and Python auto-venv tools for seamless virtual environment management.
+A collection of lightweight CLI tools to enhance your development workflow. DevEx Manager includes `git wt` for managing Git worktrees, `git nb` for Jupyter Notebook utilities, `git ctx` for branch-specific developer scratchpads, and Python auto-venv tools for seamless virtual environment management.
 
 ## Key Features
 
 - **`git wt` (Worktree Manager):** Simplify working with bare repositories and multiple worktrees.
 - **`git nb` (Notebook Utilities):** Essential tools for AI/ML developers to manage Jupyter Notebooks and kernels.
+- **`git ctx` (Context Manager):** Local, untracked todo checklists and scratchpad notes per branch.
 - **Python Auto-Venv:** Transparent activation/deactivation of `.venv`, proactive initialization using `uv`, and stale worktree detection.
 - **Git Aliases:** High-productivity shortcuts for common Git operations.
 
@@ -91,6 +92,23 @@ naming_strategy = ticket-prefix
   - *Recommended: `jq` for full metadata reporting*
 - **`git nb diff <notebook> [git-diff-args]`**: Provides a human-readable diff of notebook cells. If `nbdime` is installed, it uses `nbdiff` for a rich experience; otherwise, it falls back to a standard JSON diff with a helpful warning.
   - *Recommended: `nbdime`*
+
+---
+
+## git-ctx — Developer Context Manager
+
+`git ctx` provides local, untracked todo checklists and scratchpad notes specific to your active branch. This data is stored in the repository's `.git/info/devex/contexts/` directory so it stays private to your computer and never gets committed or pushed.
+
+### Commands
+
+- **`git ctx [show]`**: Display the notes and checklist for the current branch.
+- **`git ctx edit`**: Open the current branch's notes in your default terminal editor (`$EDITOR`).
+- **`git ctx add <task>`**: Quick shortcut to append a new todo item to the checklist.
+- **`git ctx done <index>`**: Mark a checklist item as completed.
+- **`git ctx undo <index>`**: Mark a completed checklist item as pending.
+- **`git ctx rm <index>`**: Delete a checklist item.
+- **`git ctx clean`**: Interactively detect and remove context files for local branches that have already been deleted.
+- **`git ctx todo [list|add|done|undo|rm|clear]`**: Detailed subcommand interface for managing checklist items.
 
 ---
 
