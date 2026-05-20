@@ -13,10 +13,6 @@
 # Local history
 .history/
 
-# Kiro
-.kiro
-
-# Gemini Files
-GEMINI.md
-conductor/
-conductor/*
+# Antigravity Files
+ANTIGRAVITY.md
+.antigravitycli
